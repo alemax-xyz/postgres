@@ -27,6 +27,7 @@ RUN mkdir -p /build /rootfs
 WORKDIR /build
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get download \
+        libedit2 \
         libgpg-error0 \
         libcom-err2 \
         libcomerr2 \
@@ -68,7 +69,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libxml2 \
         libxslt1.1 \
 #        locales \
-        postgresql-10
+        postgresql-10 \
+        postgresql-client-10
 RUN find *.deb | xargs -I % dpkg-deb -x % /rootfs
 
 WORKDIR /rootfs
