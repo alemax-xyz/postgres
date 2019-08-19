@@ -68,7 +68,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libuuid1 \
         libxml2 \
         libxslt1.1 \
-#        locales \
         postgresql-10 \
         postgresql-client-10
 RUN find *.deb | xargs -I % dpkg-deb -x % /rootfs
@@ -83,10 +82,6 @@ RUN mkdir -p \
  && echo postgres > etc/postgresql/pwfile \
  && find usr/lib/postgresql/10/bin/* | xargs -I % ln -s /% usr/bin/ \
  && rm -rf \
-#        usr/sbin/locale-gen \
-#        usr/sbin/update-locale \
-#        usr/sbin/validlocale \
-#        usr/share/locales \
         usr/share/bug \
         usr/share/doc \
         usr/share/lintian \
@@ -94,7 +89,7 @@ RUN mkdir -p \
         usr/share/postgresql/10/man
 
 COPY --from=base /etc/group /etc/gshadow /etc/passwd /etc/shadow etc/
-COPY init.sh etc/
+COPY init/ etc/init/
 
 WORKDIR /
 
@@ -109,7 +104,5 @@ STOPSIGNAL SIGINT
 COPY --from=build /rootfs /
 
 VOLUME ["/var/lib/postgresql"]
-
-CMD ["sh", "/etc/init.sh"]
 
 EXPOSE 5432
