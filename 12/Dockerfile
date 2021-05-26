@@ -13,13 +13,14 @@ RUN groupadd \
         --gid 50 \
         postgres
 
-FROM library/ubuntu:bionic AS build
+FROM library/ubuntu:focal AS build
 
 ENV LANG=C.UTF-8
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get update \
  && apt-get install -y \
+        --no-install-recommends \
         software-properties-common \
         apt-utils
 
@@ -37,10 +38,10 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libkrb5-3 \
         libkrb5support0 \
         libgmp10 \
-        libhogweed4 \
+        libhogweed5 \
         libidn2-0 \
-        libnettle6 \
-        libffi6 \
+        libnettle7 \
+        libffi7 \
         libp11-kit0 \
         libtasn1-6 \
         libunistring2 \
@@ -60,7 +61,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         liblz4-1 \
         libgcrypt20 \
         libgssapi-krb5-2 \
-        libicu60 \
+        libicu66 \
         libldap-2.4-2 \
         libldap-common \
         libpq5 \
@@ -68,25 +69,25 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         libuuid1 \
         libxml2 \
         libxslt1.1 \
-        postgresql-10 \
-        postgresql-client-10
+        postgresql-12 \
+        postgresql-client-12
 RUN find *.deb | xargs -I % dpkg-deb -x % /rootfs
 
 WORKDIR /rootfs
-COPY pg_hba.conf.sample usr/share/postgresql/10/
+COPY pg_hba.conf.sample usr/share/postgresql/12/
 RUN mkdir -p \
         usr/bin \
         etc/postgresql \
         var/lib/postgresql \
         run/postgresql \
  && echo postgres > etc/postgresql/pwfile \
- && find usr/lib/postgresql/10/bin/* | xargs -I % ln -s /% usr/bin/ \
+ && find usr/lib/postgresql/12/bin/* | xargs -I % ln -s /% usr/bin/ \
  && rm -rf \
         usr/share/bug \
         usr/share/doc \
         usr/share/lintian \
         usr/share/man \
-        usr/share/postgresql/10/man
+        usr/share/postgresql/12/man
 
 COPY --from=base /etc/group /etc/gshadow /etc/passwd /etc/shadow etc/
 COPY init/ etc/init/
