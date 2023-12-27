@@ -64,8 +64,8 @@ RUN apt-get download \
         libffi8 \
         libgcrypt20 \
         libgpg-error0 \
-        postgresql-10 \
-        postgresql-client-10
+        postgresql-11 \
+        postgresql-client-11
 
 RUN for file in *.deb; do dpkg-deb -x ${file} image/; done
 
@@ -76,20 +76,20 @@ RUN mkdir -p \
         var/lib/postgresql \
         run/postgresql \
  && echo postgres > etc/postgresql/pwfile \
- && find usr/lib/postgresql/10/bin/* | xargs -I % ln -s /% usr/bin/ \
+ && find usr/lib/postgresql/11/bin/* | xargs -I % ln -s /% usr/bin/ \
  && rm -rf \
-        usr/lib/postgresql/10/lib/pgxs/ \
+        usr/lib/postgresql/11/lib/pgxs/ \
         usr/share/doc \
         usr/share/libgcrypt20/ \
         usr/share/lintian \
         usr/share/locale \
         usr/share/man \
-        usr/share/postgresql/10/man \
- && truncate -s0 usr/share/postgresql/10/*.sample
+        usr/share/postgresql/11/man \
+ && truncate -s0 usr/share/postgresql/11/*.sample
 
 COPY --from=base /etc/group /etc/gshadow /etc/passwd /etc/shadow etc/
 COPY init/ etc/init/
-COPY pg_hba.conf.sample usr/share/postgresql/10/
+COPY pg_hba.conf.sample usr/share/postgresql/11/
 
 FROM clover/common
 

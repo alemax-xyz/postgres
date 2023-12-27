@@ -1,0 +1,8 @@
+@authcomment@
+
+# TYPE	DATABASE	USER		ADDRESS			METHOD
+
+@remove-line-for-nolocal@local	all		all					@authmethodlocal@
+host	all		all		0.0.0.0/0		@authmethodhost@
+@remove-line-for-nolocal@local	replication	all					@authmethodlocal@
+host	replication	all		0.0.0.0/0		@authmethodhost@

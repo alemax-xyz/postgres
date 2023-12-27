@@ -5,7 +5,8 @@ test -f /var/lib/postgresql/PG_VERSION || \
 		-D/var/lib/postgresql \
 		--auth-local=trust \
 		--auth-host=md5 \
-		--pwfile=/etc/postgresql/pwfile
+		--pwfile=/etc/postgresql/pwfile \
+		--no-instructions
 
 exec sudo -u "$PUSER" -g "$PGROUP" postgres \
 	-h'*' \
