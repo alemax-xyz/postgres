@@ -65,8 +65,8 @@ RUN apt-get download \
         libgcrypt20 \
         libgpg-error0 \
         libuuid1 \
-        postgresql-9.4 \
-        postgresql-client-9.4
+        postgresql-17 \
+        postgresql-client-17
 
 RUN for file in *.deb; do dpkg-deb -x ${file} image/; done
 
@@ -77,20 +77,20 @@ RUN mkdir -p \
         var/lib/postgresql \
         run/postgresql \
  && echo postgres > etc/postgresql/pwfile \
- && find usr/lib/postgresql/9.4/bin/* | xargs -I % ln -s /% usr/bin/ \
+ && find usr/lib/postgresql/17/bin/* | xargs -I % ln -s /% usr/bin/ \
  && rm -rf \
-        usr/lib/postgresql/9.4/lib/pgxs/ \
+        usr/lib/postgresql/17/lib/pgxs/ \
         usr/share/doc \
         usr/share/libgcrypt20/ \
         usr/share/lintian \
         usr/share/locale \
         usr/share/man \
-        usr/share/postgresql/9.4/man \
- && truncate -s0 usr/share/postgresql/9.4/*.sample
+        usr/share/postgresql/17/man \
+ && truncate -s0 usr/share/postgresql/17/*.sample
 
 COPY --from=base /etc/group /etc/gshadow /etc/passwd /etc/shadow etc/
 COPY init/ etc/init/
-COPY pg_hba.conf.sample usr/share/postgresql/9.4/
+COPY pg_hba.conf.sample usr/share/postgresql/17/
 
 FROM clover/common
 

@@ -64,6 +64,7 @@ RUN apt-get download \
         libffi8 \
         libgcrypt20 \
         libgpg-error0 \
+        libuuid1 \
         postgresql-16 \
         postgresql-client-16
 
