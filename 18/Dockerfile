@@ -57,8 +57,10 @@ RUN apt-get download \
         libgpg-error0 \
         libuuid1 \
         libxxhash0 \
-        postgresql-15 \
-        postgresql-client-15
+        libnuma1 \
+        liburing2 \
+        postgresql-18 \
+        postgresql-client-18
 
 RUN for file in *.deb; do dpkg-deb -x ${file} image/; done
 
@@ -69,16 +71,16 @@ RUN mkdir -p \
         var/lib/postgresql \
         run/postgresql \
  && echo postgres > etc/postgresql/pwfile \
- && find usr/lib/postgresql/15/bin/* | xargs -I % ln -s /% usr/bin/ \
+ && find usr/lib/postgresql/18/bin/* | xargs -I % ln -s /% usr/bin/ \
  && rm -rf \
-        usr/lib/postgresql/15/lib/pgxs/ \
+        usr/lib/postgresql/18/lib/pgxs/ \
         usr/share/doc \
         usr/share/libgcrypt20/ \
         usr/share/lintian \
         usr/share/locale \
         usr/share/man \
-        usr/share/postgresql/15/man \
- && truncate -s0 usr/share/postgresql/15/*.sample
+        usr/share/postgresql/18/man \
+ && truncate -s0 usr/share/postgresql/18/*.sample
 
 COPY --from=base /etc/group /etc/gshadow /etc/passwd /etc/shadow etc/
 COPY etc/ etc/
@@ -87,7 +89,7 @@ COPY usr/ usr/
 FROM clover/common
 
 ENV PGDATA=/var/lib/postgresql \
-    POSTGRES_INITDB_AUTH_HOST=md5 \
+    POSTGRES_INITDB_AUTH_HOST=scram-sha-256 \
     POSTGRES_INITDB_AUTH_LOCAL=trust \
     POSTGRES_INITDB_PWFILE=/etc/postgresql/pwfile \
     POSTGRES_INITDB_USERNAME=postgres \

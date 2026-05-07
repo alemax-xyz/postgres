@@ -1,3 +1,5 @@
+# check=skip=SecretsUsedInArgOrEnv
+
 FROM clover/base AS base
 
 RUN groupadd \
@@ -18,18 +20,10 @@ FROM library/debian:stable-slim AS build
 ENV LANG=C.UTF-8
 
 RUN export DEBIAN_FRONTEND=noninteractive \
- && apt-get update \
- && apt-get install -y \
-        --no-install-recommends \
-        software-properties-common \
-        apt-utils
+ && apt-get update
 
 RUN export DEBIAN_FRONTEND=noninteractive \
- && apt-get install -y \
-        wget
-
-RUN export DEBIAN_FRONTEND=noninteractive \
- && echo "deb [trusted=yes] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
+ && echo "deb [trusted=yes] http://apt.postgresql.org/pub/repos/apt trixie-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
  && apt-get update
 
 RUN mkdir -p /build/image
@@ -37,34 +31,32 @@ WORKDIR /build
 
 RUN apt-get download \
         libpq5 \
-        libzstd1 \
         liblz4-1 \
-        libicu72 \
+        libicu76 \
         libgssapi-krb5-2 \
         libxml2 \
-        libldap-2.5-0 \
+        libldap2 \
         libkrb5-3 \
         libkrb5support0 \
         libkeyutils1 \
         libk5crypto3 \
-        libssl3 \
-        libsystemd0 \
         libcom-err2 \
         liblzma5 \
         libsasl2-2 \
         libsasl2-modules-db \
-        libgnutls30 \
+        libgnutls30t64 \
         libgmp10 \
-        libhogweed6 \
+        libhogweed6t64 \
         libidn2-0 \
-        libnettle8 \
+        libnettle8t64 \
         libp11-kit0 \
         libtasn1-6 \
-        libunistring2 \
+        libunistring5 \
         libffi8 \
         libgcrypt20 \
         libgpg-error0 \
         libuuid1 \
+        libxxhash0 \
         postgresql-16 \
         postgresql-client-16
 
@@ -89,14 +81,22 @@ RUN mkdir -p \
  && truncate -s0 usr/share/postgresql/16/*.sample
 
 COPY --from=base /etc/group /etc/gshadow /etc/passwd /etc/shadow etc/
-COPY init/ etc/init/
-COPY pg_hba.conf.sample usr/share/postgresql/16/
+COPY etc/ etc/
+COPY usr/ usr/
 
 FROM clover/common
+
+ENV PGDATA=/var/lib/postgresql \
+    POSTGRES_INITDB_AUTH_HOST=md5 \
+    POSTGRES_INITDB_AUTH_LOCAL=trust \
+    POSTGRES_INITDB_PWFILE=/etc/postgresql/pwfile \
+    POSTGRES_INITDB_USERNAME=postgres \
+    POSTGRES_INITDB_NO_INSTRUCTIONS=1 \
+    POSTGRES_LISTEN_HOST=* \
+    POSTGRES_LISTEN_PORT=5432 \
+    POSTGRES_MAX_CONNECT=128
 
 WORKDIR /
 COPY --from=build /build/image /
 
-VOLUME ["/var/lib/postgresql"]
-
-EXPOSE 5432
+EXPOSE ${POSTGRES_LISTEN_PORT:-5432}
