@@ -17,52 +17,35 @@ RUN groupadd \
 
 FROM library/debian:stable-slim AS build
 
-ENV LANG=C.UTF-8
+ENV LANG=C.UTF-8 \
+    SANDBOX_ROOT=/
 
 RUN export DEBIAN_FRONTEND=noninteractive \
- && apt-get update
+ && apt-get update \
+ && apt-get install -y wget openssl ca-certificates
 
-RUN export DEBIAN_FRONTEND=noninteractive \
- && echo "deb [trusted=yes] http://apt.postgresql.org/pub/repos/apt trixie-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
- && apt-get update
+ADD https://github.com/alemax-xyz/misc-tools.git#main /usr/local/bin/
 
-RUN mkdir -p /build/image
+RUN mkdir -p /build /rootfs
+
 WORKDIR /build
 
-RUN apt-get download \
-        libpq5 \
-        liblz4-1 \
-        libicu76 \
-        libgssapi-krb5-2 \
-        libxml2 \
-        libldap2 \
-        libkrb5-3 \
-        libkrb5support0 \
-        libkeyutils1 \
-        libk5crypto3 \
-        libcom-err2 \
-        liblzma5 \
-        libsasl2-2 \
-        libsasl2-modules-db \
-        libgnutls30t64 \
-        libgmp10 \
-        libhogweed6t64 \
-        libidn2-0 \
-        libnettle8t64 \
-        libp11-kit0 \
-        libtasn1-6 \
-        libunistring5 \
-        libffi8 \
-        libgcrypt20 \
-        libgpg-error0 \
-        libuuid1 \
-        libxxhash0 \
-        postgresql-14 \
-        postgresql-client-14
+COPY build/ .
 
-RUN for file in *.deb; do dpkg-deb -x ${file} image/; done
+COPY --from=clover/common:latest /var/lib/packages/ var/lib/packages/
 
-WORKDIR /build/image
+RUN apt-sandbox --install --verstamp \
+        --apt-config \
+            APT::Install-Recommends=false \
+            APT::Get::Upgrade==false \
+        --repository . \
+        --keyring . \
+        --installed var/lib/packages \
+        --obsolete packages.obsolete \
+        --required packages.required
+
+WORKDIR /rootfs
+
 RUN mkdir -p \
         usr/bin \
         etc/postgresql \
@@ -81,8 +64,7 @@ RUN mkdir -p \
  && truncate -s0 usr/share/postgresql/14/*.sample
 
 COPY --from=base /etc/group /etc/gshadow /etc/passwd /etc/shadow etc/
-COPY etc/ etc/
-COPY usr/ usr/
+COPY rootfs/ .
 
 FROM clover/common
 
@@ -97,6 +79,7 @@ ENV PGDATA=/var/lib/postgresql \
     POSTGRES_MAX_CONNECT=128
 
 WORKDIR /
-COPY --from=build /build/image /
+
+COPY --from=build /rootfs /
 
 EXPOSE ${POSTGRES_LISTEN_PORT:-5432}

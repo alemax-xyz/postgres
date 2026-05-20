@@ -1,0 +1,15 @@
+adduser
+debconf
+init-system-helpers
+locales
+openssl
+perl
+perl:any
+procps
+sensible-utils
+ssl-cert
+systemd
+sysvinit-utils
+postgresql-common
+postgresql-client-common
+ucf
